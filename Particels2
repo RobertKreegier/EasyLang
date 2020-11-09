@@ -1,0 +1,111 @@
+# Particles 2.0
+# 
+# drastic modification of Particles demo at
+# https://easylang.online/apps/particles.html
+#
+# In this version, the algoritm is the same as the original, but the code has been
+# rearranged for a more traditional structured approach. Comments have also been
+# profusely added for educational purposes.
+# 
+# Number of particles
+n_part = 100
+# The particle's "visual" distance, the radius within which it sees other particles
+vis_dist = 15
+# Default particle size (radius), originially 0.3125
+default_size = 0.3125
+# Background Color
+bground = 000
+# Set the background color
+background bground
+# We use two arrays to represent the x and y positions of the particles (part_x[] and part_y[]), 
+# along two more arrays to represent thier x and y velocities (part_vx[] and part_vy[]).
+# I also use arrays to represent each particle's color, radius and whatever other attributes
+# I might think up. In C these might be encapsulated in structs. In C++ these would
+# be in a class.
+# In this next block of code, then, we're loading those arrays with initial values.
+for i range n_part
+  part_x[] &= randomf * 100
+  part_y[] &= randomf * 100
+  part_vx[] &= (0.5 - randomf) / 3
+  part_vy[] &= (0.5 - randomf) / 3
+  part_color[] &= randomf * 999
+  part_radius[] &= default_size
+.
+# The following code is a function definition. The code isn't called now,
+# but will be utilized later when we invoke the function's name "BoundsCheck".
+# So, in this function, we do a simple collision detection for the particle
+# number i_index. If the particle moves outside the screen edges, we flip
+# the sign of the velocity, effectively making the particle bounce off the walls.
+func BoundsCheck i_index . .
+  if part_x[i_index] > 100
+    part_x[i_index] = 100
+    part_vx[i_index] = -part_vx[i_index]
+  .
+  if part_x[i_index] < 0
+    part_x[i_index] = 0
+    part_vx[i_index] = -part_vx[i_index]
+  .
+  if part_y[i_index] > 100
+    part_y[i_index] = 100
+    part_vy[i_index] = -part_vy[i_index]
+  .
+  if part_y[i_index] < 0
+    part_y[i_index] = 0
+    part_vy[i_index] = -part_vy[i_index]
+  .
+.
+# In this function, we simply let the particle idle along by adding its
+# x and y velocity to its x and y position.
+func Idle i_index . .
+  # Do a bounds check
+  call BoundsCheck i_index
+  # Update the position by adding the velocity to it.
+  part_x[i_index] += part_vx[i_index]
+  part_y[i_index] += part_vy[i_index]
+.
+# "on animate" is a special function that EasyLang automatically calls on each
+# "frame" of our program. It's intented to be a function that draws a frame of
+# animation to the screen.
+on animate
+  # Clear the screen before drawing
+  # If we don't clear, the previous frame of the animation stays on the screen
+  clear
+  # Loop through all the particles, moving them, drawing them, and drawing the lines
+  for i range n_part
+    # move the draw cursor to part_x[], part_y[]
+    move part_x[i] part_y[i]
+    # Set the draw color for this particle
+    color part_color[i]
+    # Draw the particle
+    circle part_radius[i]
+    # In this next loop, we look at the distances to each particle and see if we need to draw
+    # a line to them. Note that for each particle, we only need to look at the particles
+    # before them in the array or we'll end up drawing the same line twice between two close
+    # particls.
+    for j range i
+      # These next couple if/then statements save computation time by first doing subtraction
+      # of positions to see if the particles are generally close to each other (within each
+      # other's box).
+      if j <> i
+        dx = abs (part_x[j] - part_x[i])
+        if dx < vis_dist
+          dy = abs (part_y[j] - part_y[i])
+          if dy < vis_dist
+            # Then, if the particles are within each other's box, we can do a more accurate
+            # but slower sqrt to get the exact distance (using the pythagorean theorem).
+            dist = sqrt (dx * dx + dy * dy)
+            if dist < vis_dist
+              # If the j particle is indeed within the radius of the i particle, then we
+              # can draw a line between them.
+              linewidth (vis_dist - dist) / 100
+              move part_x[i] part_y[i]
+              line part_x[j] part_y[j]
+            .
+          .
+        .
+      .
+    .
+    # Finally move the particle so they'll be ready to be drawn on the next frame.
+    call Idle i
+  .
+.
