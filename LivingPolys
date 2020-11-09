@@ -3,7 +3,7 @@
 # drastic modification of Particles demo at
 # https://easylang.online/apps/particles.html
 #
-# This is a combination of the Playful Polys algorithm and Particles 2.0
+# This is a combination of the PlayfulParticles algorithm and Particles 2.0
 # At higher particle counts there's a fluid simulation effect that occures.
 # 
 # Number of particles
