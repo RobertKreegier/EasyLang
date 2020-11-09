@@ -1,0 +1,214 @@
+# Playful Blobs
+# 
+# drastic modification of Particles demo at
+# https://easylang.online/apps/particles.html
+# 
+# This is a modification of the PlayfulParticles simulation where the size of each
+# particle is inversely proportional to the distance to its nearest neighbor.
+# The color brightness is also hacked together to be inversely proportional to the
+# distance. It gives a neat, sparkly effect that's hard to not stare at.
+#
+# Number of particles
+n_part = 200
+# The particle's "visual" distance, the radius within which it sees other particles
+vis_dist = 15
+personal_space = 2
+# The acceleration speed of each particle
+part_power = 0.01
+# Maximum velocity
+max_vel = 0.5
+# Flock's mid point
+FlockX = 50
+FlockY = 50
+# Background Color
+bground = 000
+# Set the background color
+background bground
+# We use two arrays to represent the x and y positions of the particles (part_x[] and part_y[]), 
+# along two more arrays to represent thier x and y velocities (part_vx[] and part_vy[]).
+# In C these might be encapsulated in structs. In C++ these would
+# be in a class.
+# In this next block of code, then, we're loading those arrays with initial values.
+for i range n_part
+  part_x[] &= randomf * 100
+  part_y[] &= randomf * 100
+  part_vx[] &= (0.5 - randomf) / 3
+  part_vy[] &= (0.5 - randomf) / 3
+.
+# We do simple collision detection with the extents of the frame. If the
+# position goes out of bounds, we flip the sign of the velocity, effectively
+# making the particle bounce off the walls.
+func BoundsCheck i_index . .
+  if part_x[i_index] > 100
+    part_x[i_index] = 100
+    part_vx[i_index] = -part_vx[i_index]
+  .
+  if part_x[i_index] < 0
+    part_x[i_index] = 0
+    part_vx[i_index] = -part_vx[i_index]
+  .
+  if part_y[i_index] > 100
+    part_y[i_index] = 100
+    part_vy[i_index] = -part_vy[i_index]
+  .
+  if part_y[i_index] < 0
+    part_y[i_index] = 0
+    part_vy[i_index] = -part_vy[i_index]
+  .
+.
+# Idle the particle along
+func Idle i_index . .
+  # Do a bounds check
+  call BoundsCheck i_index
+  # Update the position by adding the velocity to it.
+  part_x[i_index] += part_vx[i_index]
+  part_y[i_index] += part_vy[i_index]
+.
+# Move the particle toward another particle
+func MoveTo i_index jx jy . .
+  if part_x[i_index] < jx
+    part_vx[i_index] = part_vx[i_index] + part_power
+    if part_vx[i_index] > max_vel
+      part_vx[i_index] = max_vel
+    .
+  else
+    part_vx[i_index] = part_vx[i_index] - part_power
+    if part_vx[i_index] < -max_vel
+      part_vx[i_index] = -max_vel
+    .
+  .
+  if part_y[i_index] < jy
+    part_vy[i_index] = part_vy[i_index] + part_power
+    if part_vy[i_index] > max_vel
+      part_vy[i_index] = max_vel
+    .
+  else
+    part_vy[i_index] = part_vy[i_index] - part_power
+    if part_vy[i_index] < -max_vel
+      part_vy[i_index] = -max_vel
+    .
+  .
+  # Do a bounds check
+  call BoundsCheck i_index
+  # Update the position by adding the velocity to it.
+  part_x[i_index] += part_vx[i_index]
+  part_y[i_index] += part_vy[i_index]
+.
+# Move the particle away from another particle
+func MoveAway i_index jx jy . .
+  if part_x[i_index] > jx
+    if part_vx[i_index] < max_vel
+      part_vx[i_index] = part_vx[i_index] + part_power * 2
+    .
+  else
+    if part_vx[i_index] > -max_vel
+      part_vx[i_index] = part_vx[i_index] - part_power * 2
+    .
+  .
+  if part_y[i_index] > jy
+    if part_vy[i_index] < max_vel
+      part_vy[i_index] = part_vy[i_index] + part_power * 2
+    .
+  else
+    if part_vy[i_index] > -max_vel
+      part_vy[i_index] = part_vy[i_index] - part_power * 2
+    .
+  .
+  # Do a bounds check
+  call BoundsCheck i_index
+  # Update the position by adding the velocity to it.
+  part_x[i_index] += part_vx[i_index]
+  part_y[i_index] += part_vy[i_index]
+.
+# Match the particle's velocity with another's velocity
+func MatchVel i_index jxv jyv . .
+  if part_vx[i_index] < jxv
+    part_vx[i_index] = part_vx[i_index] + part_power
+    if part_vx[i_index] > max_vel
+      part_vx[i_index] = max_vel
+    .
+  else
+    part_vx[i_index] = part_vx[i_index] - part_power
+    if part_vx[i_index] < -max_vel
+      part_vx[i_index] = -max_vel
+    .
+  .
+  if part_vy[i_index] < jyv
+    part_vy[i_index] = part_vy[i_index] + part_power
+    if part_vy[i_index] > max_vel
+      part_vy[i_index] = max_vel
+    .
+  else
+    part_vy[i_index] = part_vy[i_index] - part_power
+    if part_vy[i_index] < -max_vel
+      part_vy[i_index] = -max_vel
+    .
+  .
+  # Do a bounds check
+  call BoundsCheck i_index
+  # Update the position by adding the velocity to it.
+  part_x[i_index] += part_vx[i_index]
+  part_y[i_index] += part_vy[i_index]
+.
+# The following block of code is run each frame of the animation.
+on animate
+  # Clear the screen before drawing
+  # If we don't the previous frame of the animation stays on the screen
+  clear
+  # Loop through all the particles, moving them, drawing them, and drawing the lines
+  for i range n_part
+    closest_part = 0
+    closest_dist = vis_dist + 1
+    part_in_vis = 0
+    FlockX = 0
+    FlockY = 0
+    # In this next loop, we look at the distances to each particle to find the closest particle
+    # and its distance from i
+    for j range n_part
+      # These next couple if/then statements save computation time by first doing subtraction
+      # of positions to see if the particles are generally close to each other (within each
+      # other's box).
+      if j <> i
+        dx = abs (part_x[j] - part_x[i])
+        if dx < vis_dist
+          dy = abs (part_y[j] - part_y[i])
+          if dy < vis_dist
+            # Then, if the particles are within each other's box, we can do a more accurate
+            # but slower sqrt to get the exact distance (using the pythagorean theorem).
+            dist = sqrt (dx * dx + dy * dy)
+            if dist < vis_dist
+              part_in_vis = part_in_vis + 1
+              FlockX = FlockX + part_x[j]
+              FlockY = FlockY + part_y[j]
+              if dist < closest_dist
+                closest_dist = dist
+                closest_part = j
+              .
+            .
+          .
+        .
+      .
+    .
+    # move the draw cursor to part_x[], part_y[]
+    move part_x[i] part_y[i]
+    # Set the draw color for this particle. We'll make it change with closest distance.
+    color (closest_dist / vis_dist) * 999
+    # Draw the particle. We'll make the size also tied to the closest distance.
+    circle (1 / closest_dist)
+    # Finally move the particle for the next frame. This is where the "AI" is.
+    if closest_part > 0
+      if closest_dist < personal_space
+        call MoveAway i part_x[closest_part] part_y[closest_part]
+      else
+        # Find the centroid of the flock and MoveTo it
+        XCentroid = FlockX / part_in_vis
+        YCentroid = FlockY / part_in_vis
+        call MoveTo i XCentroid YCentroid
+      .
+      # Try to match the velocity of the particle's peers
+      call MatchVel i part_vx[closest_part] part_vy[closest_part]
+    else
+      call Idle i
+    .
+  .
+.
