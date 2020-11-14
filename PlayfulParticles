@@ -13,14 +13,14 @@
 # Number of particles
 n_part = 100
 # The particle's "visual" distance, the radius within which it sees other particles
-vis_dist = 10
-personal_space = 2
+vis_dist = 30
+personal_space = 4
 # Default particle size (radius), originially 0.3125
 # default_size = 0.3
 # The acceleration speed of each particle
 part_power = 0.005
 # Maximum velocity
-max_vel = 0.1
+max_vel = 0.2
 # Flock's mid point
 FlockX = 50
 FlockY = 50
@@ -55,30 +55,34 @@ func Round X decimals . ret .
 func MoveTo i_index jx jy . .
   if part_x[i_index] < jx
     part_vx[i_index] = part_vx[i_index] + part_power
+    # part_vx[i_index] = part_vx[i_index] + (part_power * ((jx - part_x[i_index]) / vis_dist))
   .
   if part_x[i_index] > jx
     part_vx[i_index] = part_vx[i_index] - part_power
+    # part_vx[i_index] = part_vx[i_index] - (part_power * ((part_x[i_index] - jx) / vis_dist))
   .
   if part_y[i_index] < jy
     part_vy[i_index] = part_vy[i_index] + part_power
+    # part_vy[i_index] = part_vy[i_index] + (part_power * ((jy - part_y[i_index]) / vis_dist))
   .
   if part_y[i_index] > jy
     part_vy[i_index] = part_vy[i_index] - part_power
+    # part_vy[i_index] = part_vy[i_index] - (part_power * ((part_y[i_index] - jy) / vis_dist))
   .
 .
 # Move the particle away from a position
 func MoveAway i_index jx jy . .
   if part_x[i_index] > jx
-    part_vx[i_index] = part_vx[i_index] + part_power * 1.1
+    part_vx[i_index] = part_vx[i_index] + part_power
   .
   if part_x[i_index] < jx
-    part_vx[i_index] = part_vx[i_index] - part_power * 1.1
+    part_vx[i_index] = part_vx[i_index] - part_power
   .
   if part_y[i_index] > jy
-    part_vy[i_index] = part_vy[i_index] + part_power * 1.1
+    part_vy[i_index] = part_vy[i_index] + part_power
   .
   if part_y[i_index] < jy
-    part_vy[i_index] = part_vy[i_index] - part_power * 1.1
+    part_vy[i_index] = part_vy[i_index] - part_power
   .
 .
 # Match the particle's velocity with another's velocity
