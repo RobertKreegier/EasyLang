@@ -43,6 +43,16 @@ for i range n_part
   part_color[] &= 999
   # part_radius[] &= default_size
 .
+# Finds the angle between two points. 0/360 points west
+# and the angles increments clockwise.
+func AngleOf p1x p1y p2x p2y . ret .
+  deltaY = p1y - p2y
+  deltaX = p1x - p2x
+  ret = atan2 deltaY deltaX
+  if ret < 0
+    ret = ret + 360
+  .
+.
 # Round a number to the specified decimal place
 func Round X decimals . ret .
   multiplier = pow 10 decimals
