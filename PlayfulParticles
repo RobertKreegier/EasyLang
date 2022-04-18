@@ -3,7 +3,7 @@
 # drastic modification of Particles demo at
 # https://easylang.online/apps/particles.html
 # 
-# Particles now simulate an approximation of the boids flocking algorithm.
+# Particles simulate an approximation of the boids flocking algorithm.
 # A big difference comes in the movement calculation. In boids, each entity
 # has a vector with angle and velocity, so the boids tend to "skate" along.
 # In my simulation, each entity has separate X and Y velocities, so each
@@ -11,10 +11,12 @@
 # feel to the groups of entities.
 # 
 # Number of particles
-n_part = 100
+n_part = 1000
 # The particle's "visual" distance, the radius within which it sees other particles
-vis_dist = 30
-personal_space = 4
+vis_dist = 7 * 7
+personal_space = 1.5
+ps_sqr = personal_space * personal_space
+
 # Default particle size (radius), originially 0.3125
 # default_size = 0.3
 # The acceleration speed of each particle
@@ -65,19 +67,15 @@ func Round X decimals . ret .
 func MoveTo i_index jx jy . .
   if part_x[i_index] < jx
     part_vx[i_index] = part_vx[i_index] + part_power
-    # part_vx[i_index] = part_vx[i_index] + (part_power * ((jx - part_x[i_index]) / vis_dist))
   .
   if part_x[i_index] > jx
     part_vx[i_index] = part_vx[i_index] - part_power
-    # part_vx[i_index] = part_vx[i_index] - (part_power * ((part_x[i_index] - jx) / vis_dist))
   .
   if part_y[i_index] < jy
     part_vy[i_index] = part_vy[i_index] + part_power
-    # part_vy[i_index] = part_vy[i_index] + (part_power * ((jy - part_y[i_index]) / vis_dist))
   .
   if part_y[i_index] > jy
     part_vy[i_index] = part_vy[i_index] - part_power
-    # part_vy[i_index] = part_vy[i_index] - (part_power * ((part_y[i_index] - jy) / vis_dist))
   .
 .
 # Move the particle away from a position
@@ -176,12 +174,12 @@ on animate
       # of positions to see if the particles are generally close to each other (within each
       # other's box).
       dx = abs (part_x[j] - part_x[i])
-      if dx < vis_dist
+      if (dx * dx) < vis_dist
         dy = abs (part_y[j] - part_y[i])
-        if dy < vis_dist
+        if (dy * dy) < vis_dist
           # Then, if the particles are within each other's box, we can do a more accurate
           # but slower sqrt to get the exact distance (using the pythagorean theorem).
-          dist = sqrt (dx * dx + dy * dy)
+          dist = dx * dx + dy * dy
           if dist < vis_dist
             part_in_vis = part_in_vis + 1
             FlockX = FlockX + part_x[j]
@@ -198,7 +196,7 @@ on animate
     .
     # Move the particle. This is where the "AI" is.
     if closest_part > 0
-      if closest_dist < personal_space
+      if closest_dist < ps_sqr
         call MoveAway i part_x[closest_part] part_y[closest_part]
       else
         # Find the centroid of the flock and MoveTo it
