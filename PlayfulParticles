@@ -11,11 +11,13 @@
 # feel to the groups of entities.
 # 
 # Number of particles
-n_part = 1000
+n_part = 200
 # The particle's "visual" distance, the radius within which it sees other particles
-vis_dist = 7 * 7
-personal_space = 1.5
-ps_sqr = personal_space * personal_space
+Visual_Distance = 15
+Personal_Space = 2
+
+vis_dist = Visual_Distance * Visual_Distance
+ps_sqr = Personal_Space * Personal_Space
 
 # Default particle size (radius), originially 0.3125
 # default_size = 0.3
@@ -44,16 +46,6 @@ for i range n_part
   # part_color[] &= randomf * 999
   part_color[] &= 999
   # part_radius[] &= default_size
-.
-# Finds the angle between two points. 0/360 points west
-# and the angles increments clockwise.
-func AngleOf p1x p1y p2x p2y . ret .
-  deltaY = p1y - p2y
-  deltaX = p1x - p2x
-  ret = atan2 deltaY deltaX
-  if ret < 0
-    ret = ret + 360
-  .
 .
 # Round a number to the specified decimal place
 func Round X decimals . ret .
@@ -112,16 +104,16 @@ func MatchVel i_index jxv jyv . .
 # position goes out of bounds, we flip the sign of the velocity, effectively
 # making the particle bounce off the walls.
 func BoundsCheck i_index . .
-  if part_x[i_index] > (100 - personal_space * 2)
+  if part_x[i_index] > (100 - Personal_Space * 2)
     call MoveAway i_index 1000 part_y[i_index]
   .
-  if part_x[i_index] < (0 + personal_space * 2)
+  if part_x[i_index] < (0 + Personal_Space * 2)
     call MoveAway i_index -1000 part_y[i_index]
   .
-  if part_y[i_index] > (100 - personal_space * 2)
+  if part_y[i_index] > (100 - Personal_Space * 2)
     call MoveAway i_index part_x[i_index] 1000
   .
-  if part_y[i_index] < (0 + personal_space * 2)
+  if part_y[i_index] < (0 + Personal_Space * 2)
     call MoveAway i_index part_x[i_index] -1000
   .
 .
